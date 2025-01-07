@@ -35,7 +35,7 @@ interface Props {
 const ListCredentials: React.FC<Props> = ({ isHorizontal = false }) => {
   const { t } = useTranslation()
   const { agent } = useAppAgent()
-  const { credentialEmptyList: CredentialEmptyList } = useConfiguration()
+  const { credentialListOptions: CredentialListOptions, credentialEmptyList: CredentialEmptyList } = useConfiguration()
   const {
     openIdState: { w3cCredentialRecords },
   } = useOpenIDCredentials()

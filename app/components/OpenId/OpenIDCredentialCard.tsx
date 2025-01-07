@@ -42,7 +42,7 @@ const OpenIdCredentialCard: React.FC<OpenIdCredentialCardProps> = ({ credentialR
     card: {
       width: '100%',
       borderRadius: 8,
-      height: 136,
+      height: 164,
       overflow: 'hidden',
     },
     backgroundView: {

@@ -3,7 +3,6 @@ import {
   getOpenId4VcCredentialMetadata,
   getW3cCredentialDisplay,
   JsonTransformer,
-  openId4VcCredentialMetadataKey,
   receiveCredentialFromOpenId4VciOffer,
   SdJwtVcRecord,
   W3cCredentialJson,
@@ -12,13 +11,11 @@ import {
 import { BrandingOverlay } from '@hyperledger/aries-oca'
 import { CredentialOverlay } from '@hyperledger/aries-oca/build/legacy'
 import { StackScreenProps } from '@react-navigation/stack'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ActivityIndicator, DeviceEventEmitter, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { saveHistory } from '../components/History/HistoryManager'
-import { HistoryCardType, HistoryRecord } from '../components/History/types'
 import OpenIDCredentialCard from '../components/OpenId/OpenIDCredentialCard'
 import { useOpenIDCredentials } from '../components/Provider/OpenIDCredentialRecordProvider'
 import CommonFooter from '../components/common/FooterButton'
@@ -26,7 +23,6 @@ import CommonRemoveModal from '../components/modals/CommonRemoveModal'
 import W3CCredentialRecord from '../components/record/W3CCredentialRecord'
 import { EventTypes } from '../constants'
 import { useNetwork } from '../contexts/network'
-import { useStore } from '../contexts/store'
 import { useTheme } from '../contexts/theme'
 import { BifoldError } from '../types/error'
 import { NotificationStackParams, Screens, TabStacks } from '../types/navigators'
@@ -53,7 +49,6 @@ const OpenIdCredentialOffer: React.FC<OpenIdCredentialOfferProps> = ({ navigatio
   const [tables, setTables] = useState<W3CCredentialAttributeField[]>([])
   const [credentialRecord, setCredentialRecord] = useState<W3cCredentialRecord | SdJwtVcRecord>()
   const { storeOpenIdCredential } = useOpenIDCredentials()
-  const [store] = useStore()
   const styles = StyleSheet.create({
     headerTextContainer: {
       paddingHorizontal: 25,
@@ -71,40 +66,6 @@ const OpenIdCredentialOffer: React.FC<OpenIdCredentialOfferProps> = ({ navigatio
       flex: 1,
     },
   })
-
-  const logHistoryRecord = useCallback(async () => {
-    try {
-      if (!(agent && store.preferences.useHistoryCapability)) {
-        return
-      }
-
-      const type = HistoryCardType.CardAccepted
-      if (!credentialRecord) {
-        return
-      }
-
-      // Check if the metadata contains the key
-      const hasOpenId4VcMetadata = Object.keys(credentialRecord?.metadata?.data || {}).includes(
-        openId4VcCredentialMetadataKey,
-      )
-
-      if (hasOpenId4VcMetadata) {
-        const firstName =
-          credentialRecord?.metadata?.data[openId4VcCredentialMetadataKey]?.credential?.display?.[0]?.name
-        /** Save history record for card accepted */
-        const recordData: HistoryRecord = {
-          type: type,
-          message: type,
-          createdAt: credentialRecord?.createdAt,
-          correspondenceId: credentialRecord.id,
-          correspondenceName: firstName,
-        }
-        await saveHistory(recordData, agent)
-      }
-    } catch (err: unknown) {
-      // error when agent and preferences not getting
-    }
-  }, [agent, store.preferences.useHistoryCapability, credentialRecord])
   useEffect(() => {
     const requestCredential = async (params: Query) => {
       try {
@@ -149,7 +110,6 @@ const OpenIdCredentialOffer: React.FC<OpenIdCredentialOfferProps> = ({ navigatio
         return
       }
       await storeOpenIdCredential(agent, credentialRecord)
-      logHistoryRecord()
       navigation.getParent()?.navigate(TabStacks.HomeStack, { screen: Screens.Home })
     } catch (err: unknown) {
       setButtonsVisible(true)

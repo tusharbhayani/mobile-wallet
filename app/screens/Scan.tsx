@@ -1,6 +1,6 @@
 import type { BarCodeReadEvent } from 'react-native-camera'
 
-import { ConnectionRecord, getOID4VCCredentialsForProofRequest, parseInvitationUrl } from '@adeya/ssi'
+import { getOID4VCCredentialsForProofRequest, parseInvitationUrl } from '@adeya/ssi'
 import { StackScreenProps } from '@react-navigation/stack'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -69,37 +69,6 @@ const Scan: React.FC<ScanProps> = ({ navigation, route }) => {
     [agent, t],
   )
 
-  const logHistoryRecord = async (connectionRecord: ConnectionRecord | undefined) => {
-    const contactLabel: string | void = await getConnectionName(connectionRecord)
-
-    try {
-      if (!(agent && store.preferences.useHistoryCapability)) {
-        return
-      }
-      const type = HistoryCardType.Connection
-      if (!connectionRecord) {
-        return
-      }
-
-      try {
-        // Prepare the history record object
-        const recordData: HistoryRecord = {
-          type: type,
-          message: type,
-          createdAt: connectionRecord?.createdAt, // Assuming `data` has `createdAt` field
-          correspondenceId: connectionRecord?.id,
-          connection: contactLabel,
-        }
-        // Save the history record asynchronously
-        await saveHistory(recordData, agent)
-      } catch (error) {
-        // error when save history
-      }
-    } catch (err: unknown) {
-      // error when agent and preferences not getting
-    }
-  }
-
   const handleInvitationUrls = (url: string) => {
     return parseInvitationUrl(url)
   }
@@ -114,7 +83,6 @@ const Scan: React.FC<ScanProps> = ({ navigation, route }) => {
           const data =
             invitationData.format === 'parsed' ? encodeURIComponent(JSON.stringify(invitationData.data)) : undefined
           setLoading(false)
-
           navigation.getParent()?.navigate(Stacks.NotificationStack, {
             screen: Screens.OpenIdCredentialOffer,
             params: { uri, data },
